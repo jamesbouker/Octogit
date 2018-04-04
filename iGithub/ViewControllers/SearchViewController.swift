@@ -105,7 +105,7 @@ extension SearchViewController: SearchBarDelegate {
     
     func searchBarSearchButtonClicked(_ searchBar: SearchBar) {
         
-        if let query = searchBar.text , query.characters.count > 0 {
+        if let query = searchBar.text , query.count > 0 {
             _ = searchBar.resignFirstResponder()
             viewModel.search(query: query)
         }

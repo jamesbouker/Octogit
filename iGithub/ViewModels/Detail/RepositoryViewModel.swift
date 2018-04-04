@@ -61,7 +61,7 @@ class RepositoryViewModel {
     lazy var information: String = {
         var information: String = "Check out the repository \(self.nameWithOwner)."
         if let description = self.repository.value.repoDescription,
-            description.characters.count > 0 {
+            description.count > 0 {
             information.append(" \(description)")
         }
         
@@ -199,12 +199,12 @@ class RepositoryViewModel {
         }
         
         if let desc = repo.repoDescription?.trimmingCharacters(in: .whitespacesAndNewlines),
-            desc.characters.count > 0 {
+            desc.count > 0 {
             infoTypes.append(.description)
         }
         
         if let homepage = repo.homepage?.absoluteString.trimmingCharacters(in: .whitespacesAndNewlines),
-            homepage.characters.count > 0 {
+            homepage.count > 0 {
             infoTypes.append(.homepage)
         }
         
