@@ -7,22 +7,21 @@
 //
 
 import Foundation
-import RxSwift
 import ObjectMapper
+import RxSwift
 
 class GistViewModel: BaseTableViewModel<Comment> {
-    
     var gist: Gist
-    
+
     init(gist: Gist) {
         self.gist = gist
-        
+
         super.init()
     }
-    
+
     override func fetchData() {
         let token = GitHubAPI.gistComments(gistID: gist.id!, page: page)
-        
+
         GitHubProvider
             .request(token)
             .do(onNext: { [unowned self] in
@@ -43,7 +42,7 @@ class GistViewModel: BaseTableViewModel<Comment> {
             )
             .addDisposableTo(disposeBag)
     }
-    
+
     func numberOfRows(inSection section: Int) -> Int {
         switch section {
         case 0:

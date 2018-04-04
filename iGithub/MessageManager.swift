@@ -7,24 +7,23 @@
 //
 
 import Foundation
-import SwiftMessages
 import Moya
+import SwiftMessages
 
 class MessageManager {
-    
     class func show(error: Swift.Error) {
         guard let e = error as? MoyaError else {
             return
         }
-        
+
         var body: String
-        
+
         switch e {
         case .jsonMapping, .imageMapping, .stringMapping:
             body = "Data error"
-        case .statusCode(let response):
+        case let .statusCode(response):
             body = "\(response.statusCode) error"
-        case .underlying(let nsError as NSError, _):
+        case let .underlying(nsError as NSError, _):
             switch nsError.code {
             case NSURLErrorTimedOut:
                 body = "Request timeout."
@@ -42,15 +41,13 @@ class MessageManager {
         var config = SwiftMessages.Config()
         config.presentationContext = .window(windowLevel: UIWindowLevelNormal)
         config.interactiveHide = true
-        
+
         let messageView: MessageView = try! SwiftMessages.viewFromNib()
         messageView.configureTheme(type)
         messageView.configureContent(title: title, body: body)
         messageView.button?.isHidden = true
         messageView.titleLabel?.isHidden = title.characters.count <= 0
-        
+
         SwiftMessages.show(config: config, view: messageView)
     }
-    
-    
 }

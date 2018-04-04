@@ -8,7 +8,7 @@
 
 import UIKit
 
-enum Octicon : String, CustomStringConvertible {
+enum Octicon: String, CustomStringConvertible {
     case alert = "\u{f02d}"
     case arrowDown = "\u{f03f}"
     case arrowLeft = "\u{f040}"
@@ -176,44 +176,43 @@ enum Octicon : String, CustomStringConvertible {
     case watch = "\u{f0e0}"
     case x = "\u{f081}"
     case zap = "\u{26a1}"
-    
+
     func iconString(_ text: String, iconSize: CGFloat = 14, iconColor: UIColor? = nil, attributes: [NSAttributedStringKey: AnyObject]? = nil) -> NSMutableAttributedString {
-        
         var iconAttributes: [NSAttributedStringKey: AnyObject] = [NSAttributedStringKey.font: UIFont.OcticonOfSize(iconSize)]
         if iconColor != nil {
             iconAttributes[NSAttributedStringKey.foregroundColor] = iconColor
         }
-        
+
         let iconString = NSMutableAttributedString(string: "\(self)", attributes: iconAttributes)
         let attributedText = NSMutableAttributedString(string: " \(text)")
-        
+
         if let attributes = attributes {
             attributedText.addAttributes(attributes, range: NSMakeRange(1, text.characters.count))
         }
-        
+
         iconString.append(attributedText)
-        
+
         return iconString
     }
-    
+
     func image(color: UIColor = UIColor(netHex: 0x333333), backgroundColor: UIColor = .clear, iconSize: CGFloat, size: CGSize) -> UIImage {
-        
         UIGraphicsBeginImageContextWithOptions(size, false, 0)
-        
+
         (rawValue as NSString).draw(in: CGRect(origin: CGPoint.zero, size: size),
                                     withAttributes: [
                                         NSAttributedStringKey.font: UIFont.OcticonOfSize(iconSize),
                                         NSAttributedStringKey.foregroundColor: color,
-                                        NSAttributedStringKey.backgroundColor: backgroundColor])
-        
+                                        NSAttributedStringKey.backgroundColor: backgroundColor,
+        ])
+
         let image = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
-        
+
         return image!
     }
-    
+
     var description: String {
-        return self.rawValue
+        return rawValue
     }
 }
 

@@ -10,27 +10,25 @@ import Foundation
 import ObjectMapper
 
 class FileTableViewModel: BaseTableViewModel<File> {
-    
     var repository: String
     var path: String
     var ref: String
-    
+
     init(repository: String, path: String = "", ref: String) {
-        
         self.repository = repository
         self.path = path
         self.ref = ref
-        
+
         super.init()
     }
-    
-    var title: String {        
+
+    var title: String {
         return (path == "" ? ref : path).components(separatedBy: "/").last!
     }
-    
+
     override func fetchData() {
         let token = GitHubAPI.getContents(repo: repository, path: path, ref: ref)
-        
+
         GitHubProvider
             .request(token)
             .mapJSON()
@@ -59,7 +57,7 @@ class FileTableViewModel: BaseTableViewModel<File> {
                                     return true
                                 }
                             }
-                    })
+                        })
                 },
                 onError: { [unowned self] in
                     self.error.value = $0
@@ -67,19 +65,19 @@ class FileTableViewModel: BaseTableViewModel<File> {
             )
             .addDisposableTo(disposeBag)
     }
-    
+
     func fileViewModel(_ file: File) -> FileViewModel {
         return FileViewModel(repository: repository, file: file, ref: ref)
     }
-    
+
     func submoduleViewModel(_ file: File) -> FileTableViewModel {
         let pathComponents = file.gitLink!.pathComponents
         let repo = "\(pathComponents[2])/\(pathComponents[3])"
         let ref = pathComponents.last!
-        
+
         return FileTableViewModel(repository: repo, ref: ref)
     }
-    
+
     func subDirectoryViewModel(_ directory: File) -> FileTableViewModel {
         return FileTableViewModel(repository: repository, path: directory.path!, ref: ref)
     }

@@ -9,47 +9,46 @@
 import ObjectMapper
 
 class UserTableViewModel: BaseTableViewModel<User> {
-    
     var token: GitHubAPI
-    
+
     init(repo: Repository) {
         token = .repositoryContributors(repo: repo.nameWithOwner!, page: 1)
         super.init()
     }
-    
+
     init(organization: User) {
         token = .organizationMembers(org: organization.login!, page: 1)
         super.init()
     }
-    
+
     init(followedBy user: User) {
         token = .followedBy(user: user.login!, page: 1)
         super.init()
     }
-    
+
     init(followersOf user: User) {
         token = .followersOf(user: user.login!, page: 1)
         super.init()
     }
-    
+
     func updateToken() {
         switch token {
-        case .repositoryContributors(let repo, _):
+        case let .repositoryContributors(repo, _):
             token = .repositoryContributors(repo: repo, page: page)
-        case .organizationMembers(let org, _):
+        case let .organizationMembers(org, _):
             token = .organizationMembers(org: org, page: page)
-        case .followedBy(let user, _):
+        case let .followedBy(user, _):
             token = .followedBy(user: user, page: page)
-        case .followersOf(let user, _):
+        case let .followersOf(user, _):
             token = .followersOf(user: user, page: page)
         default:
             break
         }
     }
-    
+
     override func fetchData() {
         updateToken()
-        
+
         GitHubProvider
             .request(token)
             .do(onNext: { [unowned self] in
@@ -66,7 +65,7 @@ class UserTableViewModel: BaseTableViewModel<User> {
                         } else {
                             self.dataSource.value.append(contentsOf: newUsers)
                         }
-                        
+
                         self.page += 1
                     }
                 },

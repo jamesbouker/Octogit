@@ -10,37 +10,36 @@ import Foundation
 import ObjectMapper
 
 class PullRequest: Issue {
-    
     var isMerged: Bool?
     var mergedAt: Date?
-    
+
     override func mapping(map: Map) {
         super.mapping(map: map)
-        
+
         isMerged <- map["merged"]
         mergedAt <- (map["merged_at"], ISO8601DateTransform())
     }
-    
+
     override var icon: Octicon {
         if let _ = mergedAt {
             return .gitMerge
         }
         return .gitPullrequest
     }
-    
+
     override var iconColor: UIColor {
         switch state! {
         case .closed:
             if mergedAt != nil {
-                return UIColor(netHex: 0x6e5494)
+                return UIColor(netHex: 0x6E5494)
             } else {
-                return UIColor(netHex: 0xbd2c00)
+                return UIColor(netHex: 0xBD2C00)
             }
         case .open:
-            return UIColor(netHex: 0x6cc644)
+            return UIColor(netHex: 0x6CC644)
         }
     }
-    
+
     override var isPullRequest: Bool {
         return true
     }

@@ -9,14 +9,13 @@
 import UIKit
 
 class RepositoryTableViewController: BaseTableViewController {
-
     var viewModel: RepositoryTableViewModel! {
         didSet {
             viewModel.dataSource.asDriver()
                 .skip(1)
                 .do(onNext: { [unowned self] _ in
                     self.tableView.refreshHeader?.endRefreshing()
-                    
+
                     self.viewModel.hasNextPage ?
                         self.tableView.refreshFooter?.endRefreshing() :
                         self.tableView.refreshFooter?.endRefreshingWithNoMoreData()
@@ -28,12 +27,12 @@ class RepositoryTableViewController: BaseTableViewController {
                         self.hide(statusType: .empty)
                     }
                 })
-                .drive(tableView.rx.items(cellIdentifier: "RepositoryCell", cellType: RepositoryCell.self)) { row, element, cell in
+                .drive(tableView.rx.items(cellIdentifier: "RepositoryCell", cellType: RepositoryCell.self)) { _, element, cell in
                     cell.shouldDisplayFullName = self.viewModel.shouldDisplayFullName
                     cell.configure(withRepository: element)
                 }
                 .addDisposableTo(viewModel.disposeBag)
-            
+
             viewModel.error.asDriver()
                 .filter {
                     $0 != nil
@@ -46,23 +45,21 @@ class RepositoryTableViewController: BaseTableViewController {
                 .addDisposableTo(viewModel.disposeBag)
         }
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         tableView.register(RepositoryCell.self, forCellReuseIdentifier: "RepositoryCell")
-        
+
         tableView.refreshHeader = RefreshHeader(target: viewModel, selector: #selector(viewModel.refresh))
         tableView.refreshFooter = RefreshFooter(target: viewModel, selector: #selector(viewModel.fetchData))
-        
+
         tableView.refreshHeader?.beginRefreshing()
     }
-    
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
+
+    override func tableView(_: UITableView, didSelectRowAt indexPath: IndexPath) {
         let repoVC = RepositoryViewController.instantiateFromStoryboard()
         repoVC.viewModel = viewModel.repoViewModel(forRow: indexPath.row)
-        self.navigationController?.pushViewController(repoVC, animated: true)
+        navigationController?.pushViewController(repoVC, animated: true)
     }
-
 }

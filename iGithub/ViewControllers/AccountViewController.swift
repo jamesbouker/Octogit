@@ -9,24 +9,23 @@
 import UIKit
 
 class AccountViewController: UITableViewController {
-    
     @IBOutlet private var header: UserHeaderView!
     private var imageView: UIImageView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         navigationItem.backBarButtonItem = UIBarButtonItem(title: "Back", style: .plain, target: nil, action: nil)
-        
+
         header.setContent(withUser: AccountManager.currentUser!)
-        sizeHeaderToFit(tableView: self.tableView)
-        
+        sizeHeaderToFit(tableView: tableView)
+
         AccountManager.refresh {
             self.header.setContent(withUser: $0)
             self.sizeHeaderToFit(tableView: self.tableView)
         }
     }
-    
+
     override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         switch section {
         case 3, 4:
@@ -38,12 +37,12 @@ class AccountViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        
+
         switch indexPath.section {
         case 0:
             let repoTVC = RepositoryTableViewController()
             repoTVC.hidesBottomBarWhenPushed = true
-            
+
             switch indexPath.row {
             case 0:
                 repoTVC.viewModel = RepositoryTableViewModel(stargazer: AccountManager.currentUser!)
@@ -68,18 +67,18 @@ class AccountViewController: UITableViewController {
             navigationController?.pushViewController(gistTVC, animated: true)
         case 4:
             let alertController = UIAlertController(title: "Are you sure you want to log out?", message: nil, preferredStyle: .actionSheet)
-            
+
             let logoutAction = UIAlertAction(title: "Log out", style: .destructive) { _ in
                 AccountManager.logout()
-                
+
                 let loginVC = UIStoryboard(name: "Login", bundle: nil).instantiateInitialViewController()
                 UIApplication.shared.delegate!.window!!.rootViewController = loginVC
             }
-            
+
             alertController.addAction(logoutAction)
             alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-                
-            self.navigationController?.present(alertController, animated: true, completion: nil)
+
+            navigationController?.present(alertController, animated: true, completion: nil)
         default:
             break
         }
@@ -87,19 +86,18 @@ class AccountViewController: UITableViewController {
 }
 
 extension AccountViewController: UserHeaderViewProtocol {
-    
     func didTapFollowersButton() {
         let userTVC = UserTableViewController()
         userTVC.viewModel = UserTableViewModel(followersOf: AccountManager.currentUser!)
         navigationController?.pushViewController(userTVC, animated: true)
     }
-    
+
     func didTapRepositoiesButton() {
         let repoTVC = RepositoryTableViewController()
         repoTVC.viewModel = RepositoryTableViewModel(login: AccountManager.currentUser!.login, type: .user)
         navigationController?.pushViewController(repoTVC, animated: true)
     }
-    
+
     func didTapFollowingButton() {
         let userTVC = UserTableViewController()
         userTVC.viewModel = UserTableViewModel(followedBy: AccountManager.currentUser!)

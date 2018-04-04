@@ -10,23 +10,22 @@ import Foundation
 import ObjectMapper
 
 class CommitFileTableViewModel: BaseTableViewModel<CommitFile> {
-    
     var repo: String?
     var pullRequestNumber: Int?
-    
+
     init(repo: String, pullRequestNumber: Int) {
         self.repo = repo
         self.pullRequestNumber = pullRequestNumber
-        
+
         super.init()
     }
-    
+
     init(files: [CommitFile]) {
         super.init()
-        
-        self.dataSource.value = files
+
+        dataSource.value = files
     }
-    
+
     override func fetchData() {
         let token = GitHubAPI.pullRequestFiles(repo: repo!, number: pullRequestNumber!, page: page)
 
@@ -47,7 +46,7 @@ class CommitFileTableViewModel: BaseTableViewModel<CommitFile> {
                         } else {
                             self.dataSource.value.append(contentsOf: newFiles)
                         }
-                        
+
                         self.page += 1
                     }
                 },
@@ -57,7 +56,7 @@ class CommitFileTableViewModel: BaseTableViewModel<CommitFile> {
             )
             .addDisposableTo(disposeBag)
     }
-    
+
     func fileViewModel(forRow row: Int) -> FileViewModel {
         return FileViewModel(file: dataSource.value[row])
     }

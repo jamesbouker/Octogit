@@ -9,22 +9,21 @@
 import Foundation
 
 class GistCell: UITableViewCell {
-    
     fileprivate let nameLabel = UILabel()
     fileprivate let filesCountLabel = UILabel()
     fileprivate let timeLabel = UILabel()
-    
+
     override init(style: UITableViewCellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        
-        self.configureSubviews()
-        self.layout()
+
+        configureSubviews()
+        layout()
     }
-    
-    required init?(coder aDecoder: NSCoder) {
+
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     func configureSubviews() {
         nameLabel.numberOfLines = 3
         nameLabel.lineBreakMode = .byTruncatingTail
@@ -32,7 +31,7 @@ class GistCell: UITableViewCell {
         nameLabel.textColor = UIColor(netHex: 0x4078C0)
         nameLabel.layer.isOpaque = true
         nameLabel.backgroundColor = .white
-        
+
         [filesCountLabel, timeLabel].forEach {
             $0.font = .systemFont(ofSize: 14)
             $0.textColor = UIColor(netHex: 0x767676)
@@ -40,37 +39,37 @@ class GistCell: UITableViewCell {
             $0.backgroundColor = .white
         }
     }
-    
+
     func layout() {
         filesCountLabel.setContentHuggingPriority(UILayoutPriority.defaultHigh, for: .horizontal)
         timeLabel.setContentHuggingPriority(UILayoutPriority.defaultLow, for: .horizontal)
-        
+
         let stackView = UIStackView(arrangedSubviews: [filesCountLabel, timeLabel])
         stackView.axis = .horizontal
         stackView.distribution = .fill
         stackView.alignment = .fill
         stackView.spacing = 10
-        
+
         contentView.addSubviews([nameLabel, stackView])
-        
+
         let margins = contentView.layoutMarginsGuide
-        
+
         NSLayoutConstraint.activate([
             nameLabel.topAnchor.constraint(equalTo: margins.topAnchor),
             nameLabel.leadingAnchor.constraint(equalTo: margins.leadingAnchor),
             nameLabel.trailingAnchor.constraint(equalTo: margins.trailingAnchor),
-            
+
             stackView.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 5),
             stackView.leadingAnchor.constraint(equalTo: nameLabel.leadingAnchor),
             stackView.trailingAnchor.constraint(equalTo: nameLabel.trailingAnchor),
-            stackView.bottomAnchor.constraint(equalTo: margins.bottomAnchor)
+            stackView.bottomAnchor.constraint(equalTo: margins.bottomAnchor),
         ])
     }
-    
+
     var entity: Gist! {
         didSet {
             nameLabel.text = entity.files?[0].name
-            
+
             filesCountLabel.attributedText = Octicon.gist.iconString("\(entity.files!.count)")
             timeLabel.attributedText = Octicon.clock.iconString(entity.updatedAt!.naturalString())
         }

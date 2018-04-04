@@ -7,17 +7,16 @@
 //
 
 import Foundation
-import RxSwift
 import ObjectMapper
+import RxSwift
 
 class CommitViewModel: BaseTableViewModel<Comment> {
-    
     enum SectionType {
         case message
         case changes
         case timeline
     }
-    
+
     var repo: String
     var sha: String
     var commit = Variable<Commit?>(nil)
@@ -25,31 +24,31 @@ class CommitViewModel: BaseTableViewModel<Comment> {
     var shortSHA: String {
         return sha.substring(to: 7)
     }
-    
+
     var additions = 0
     var removed = 0
     var modified = 0
-    
+
     init(repo: String, commit: Commit) {
         self.repo = repo
-        self.sha = commit.sha
+        sha = commit.sha
         self.commit.value = commit
-        
+
         super.init()
-        
+
         setSectionTypes(withCommit: commit)
     }
-    
+
     init(repo: String, sha: String) {
         self.repo = repo
         self.sha = sha
-        
+
         super.init()
     }
-    
+
     func fetchFiles() {
         let token = GitHubAPI.commit(repo: repo, sha: sha)
-        
+
         GitHubProvider
             .request(token)
             .mapJSON()
@@ -67,10 +66,10 @@ class CommitViewModel: BaseTableViewModel<Comment> {
             )
             .addDisposableTo(disposeBag)
     }
-    
+
     override func fetchData() {
         let token = GitHubAPI.commitComments(repo: repo, sha: sha, page: page)
-        
+
         GitHubProvider
             .request(token)
             .do(onNext: { [unowned self] in
@@ -91,14 +90,14 @@ class CommitViewModel: BaseTableViewModel<Comment> {
             )
             .addDisposableTo(disposeBag)
     }
-    
+
     func setSectionTypes(withCommit commit: Commit) {
         sectionTypes.removeAll()
-        
+
         if commit.message!.components(separatedBy: "\n").count > 1 {
             sectionTypes.append(.message)
         }
-        
+
         sectionTypes.append(.changes)
         sectionTypes.append(.timeline)
     }
@@ -106,7 +105,7 @@ class CommitViewModel: BaseTableViewModel<Comment> {
     func numberOfSections() -> Int {
         return sectionTypes.count
     }
-    
+
     func numberOfRows(inSection section: Int) -> Int {
         switch sectionTypes[section] {
         case .message:
@@ -117,12 +116,12 @@ class CommitViewModel: BaseTableViewModel<Comment> {
             return dataSource.value.count
         }
     }
-    
+
     func classifyFiles(ofCommit commit: Commit) {
         additions = 0
         removed = 0
         modified = 0
-        
+
         commit.files!.forEach {
             switch $0.status! {
             case .added:

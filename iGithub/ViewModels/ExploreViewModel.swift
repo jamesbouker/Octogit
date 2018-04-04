@@ -7,11 +7,11 @@
 //
 
 import Foundation
-import RxSwift
-import RxMoya
 import Kanna
 import ObjectMapper
-//import Result
+import RxMoya
+import RxSwift
+// import Result
 
 let languagesArray: [String] = {
     let path = Bundle.main.path(forResource: "languages_array", ofType: "plist")
@@ -24,7 +24,6 @@ let languagesDict: [String: String] = {
 }()
 
 class ExplorationViewModel {
-    
     var since: TrendingTime
     var language: String
     var type: TrendingType {
@@ -36,21 +35,19 @@ class ExplorationViewModel {
     let pickerVM = PickerViewModel()
     let repoTVM = TrendingRepositoryTableViewModel()
     let userTVM = TrendingUserTableViewModel()
-    
+
     var timeOptions: [String] {
-        get {
-            return pickerVM.timeOptions.map {$0.desc}
-        }
+        return pickerVM.timeOptions.map { $0.desc }
     }
-    
+
     init(since: TrendingTime = .today, language: String = "All Languages", type: TrendingType = .repositories) {
         self.since = since
         self.language = language
         self.type = type
-        
+
         updateOptions()
     }
-    
+
     func updateOptions() {
         var trendingVM: TrendingViewModelProtocol
         switch type {
@@ -59,13 +56,13 @@ class ExplorationViewModel {
         case .users:
             trendingVM = userTVM
         }
-        
+
         guard trendingVM.since != since || trendingVM.language != language else {
             return
         }
         trendingVM.since = since
         trendingVM.language = language
-        
+
         switch type {
         case .repositories:
             repoTVM.message = nil
@@ -74,7 +71,7 @@ class ExplorationViewModel {
             userTVM.message = nil
             userTVM.users.value.removeAll()
         }
-        
+
         trendingVM.fetchHTML()
     }
 }
@@ -82,13 +79,11 @@ class ExplorationViewModel {
 // MARK: SubViewModels
 
 class PickerViewModel {
-    
     let timeOptions: [(time: TrendingTime, desc: String)] = [
         (.today, "today"),
         (.thisWeek, "this week"),
-        (.thisMonth, "this month")
+        (.thisMonth, "this month"),
     ]
-    
 }
 
 protocol TrendingViewModelProtocol: class {
@@ -107,9 +102,9 @@ extension TrendingViewModelProtocol {
             .mapString()
             .subscribe(onSuccess: { [unowned self] in
                 guard let doc = Kanna.HTML(html: $0, encoding: String.Encoding.utf8) else {
-                    return  // Result(error: ParseError.HTMLParseError)
+                    return // Result(error: ParseError.HTMLParseError)
                 }
-                
+
                 self.parse(doc)
             })
             .addDisposableTo(disposeBag)
@@ -117,7 +112,6 @@ extension TrendingViewModelProtocol {
 }
 
 class TrendingRepositoryTableViewModel: TrendingViewModelProtocol {
-    
     var disposeBag = DisposeBag()
     var since: TrendingTime?
     var language: String?
@@ -127,30 +121,29 @@ class TrendingRepositoryTableViewModel: TrendingViewModelProtocol {
     var token: GitHubAPI {
         return GitHubAPI.trending(since: since!, language: languagesDict[language!]!, type: .repositories)
     }
-    
+
     @inline(__always) func parse(_ doc: HTMLDocument) {
         message = doc.css("div.blankslate h3").first?.text?.trimmingCharacters(in: .whitespacesAndNewlines)
-        
+
         repositories.value = doc.css("div.explore-content li").map {
             let name = String($0.at_css("h3 a")!["href"]!.characters.dropFirst())
-            
+
             let rawDesc = $0.at_css("div.py-1 p")
             let description = rawDesc?.text?.trimmingCharacters(in: .whitespacesAndNewlines)
-            
+
             let language = $0.at_css("span[itemprop=\"programmingLanguage\"]")?.text?.trimmingCharacters(in: .whitespacesAndNewlines)
             let starSVG = $0.at_css("svg[aria-label=\"star\"]")
             let stargazers = starSVG?.parent?.text?.trimmingCharacters(in: .whitespacesAndNewlines)
             let forkSVG = $0.at_css("svg[aria-label=\"fork\"]")
             let forks = forkSVG?.parent?.text?.trimmingCharacters(in: .whitespacesAndNewlines)
             let periodStargazers = $0.at_css("span svg.octicon-star")?.parent?.text?.trimmingCharacters(in: .whitespacesAndNewlines)
-            
+
             return (name, description, language, stargazers, forks, periodStargazers)
         }
     }
 }
 
 class TrendingUserTableViewModel: TrendingViewModelProtocol {
-    
     var disposeBag = DisposeBag()
     var since: TrendingTime?
     var language: String?
@@ -159,10 +152,10 @@ class TrendingUserTableViewModel: TrendingViewModelProtocol {
     var token: GitHubAPI {
         return GitHubAPI.trending(since: since!, language: languagesDict[language!]!, type: .users)
     }
-    
+
     @inline(__always) func parse(_ doc: HTMLDocument) {
         message = doc.css("div.blankslate h3").first?.text?.trimmingCharacters(in: .whitespacesAndNewlines)
-        
+
         users.value = doc.css("li.user-leaderboard-list-item.leaderboard-list-item").map {
             let name = String($0.at_css("div h2 a")!["href"]!.characters.dropFirst())
             let avatarURL = $0.at_css("a img")!["src"]!
@@ -174,7 +167,7 @@ class TrendingUserTableViewModel: TrendingViewModelProtocol {
             default:
                 type = "User"
             }
-            
+
             return Mapper<User>().map(JSON: ["login": name, "avatar_url": avatarURL, "type": type])!
         }
     }

@@ -8,19 +8,18 @@
 
 import Foundation
 import Moya
+import ObjectMapper
 import RxMoya
 import RxSwift
-import ObjectMapper
 
 class RepositoryViewModel {
-    
     enum Section {
         case info
         case code
         case misc
         case loading
     }
-    
+
     enum InfoType {
         case author
         case parent
@@ -29,7 +28,7 @@ class RepositoryViewModel {
         case homepage
         case readme
     }
-    
+
     enum MiscType {
         case issues
         case pullRequests
@@ -37,68 +36,70 @@ class RepositoryViewModel {
         case contributors
         case activity
     }
-    
+
     var owner: String
     var name: String
     var nameWithOwner: String {
         return "\(owner)/\(name)"
     }
+
     let disposeBag = DisposeBag()
     var repository: Variable<Repository>
     var hasStarred: Variable<Bool?> = Variable(nil)
     var error: Variable<MoyaError?> = Variable(nil)
     var isRepositoryLoaded = false
-    
+
     var branches = [Branch]()
     var pageForBranches = 1
     var isBranchesLoaded = Variable(false)
     var branch: String?
-    
+
     var sections = [Section]()
     var infoTypes = [InfoType]()
     var miscTypes = [MiscType]()
-    
+
     lazy var information: String = {
         var information: String = "Check out the repository \(self.nameWithOwner)."
         if let description = self.repository.value.repoDescription,
             description.count > 0 {
             information.append(" \(description)")
         }
-        
+
         return information
     }()
+
     lazy var htmlURL: URL = {
-        return URL(string: "https://github.com/\(self.nameWithOwner)")!
+        URL(string: "https://github.com/\(self.nameWithOwner)")!
     }()
-    
+
     init(repo: Repository) {
-        self.name = repo.name
-        self.owner = repo.owner!.login
-        self.repository = Variable(repo)
+        name = repo.name
+        owner = repo.owner!.login
+        repository = Variable(repo)
     }
-    
+
     init(repo: String) {
         let nameComponents = repo.components(separatedBy: "/")
-        self.owner = nameComponents[0]
-        self.name = nameComponents[1]
-        self.repository = Variable(Mapper<Repository>().map(JSON: ["name": "\(name)"])!)
+        owner = nameComponents[0]
+        name = nameComponents[1]
+        repository = Variable(Mapper<Repository>().map(JSON: ["name": "\(name)"])!)
     }
-    
+
     func fetchRepository() {
         GitHubProvider
-            .request(.repository(owner:owner, name:name))
+            .request(.repository(owner: owner, name: name))
             .filterSuccessfulStatusAndRedirectCodes()
             .mapJSON()
             .subscribe(onSuccess: { [unowned self] in
-                
+
                 guard
-                    let json = $0 as? [String : [String : Any]],
+                    let json = $0 as? [String: [String: Any]],
                     let repo = Mapper<Repository>().map(JSONObject: json["data"]?["repository"])
                 else {
-					self.error.value = MoyaError.statusCode(Response(statusCode: 404, data: Data()))
+                    self.error.value = MoyaError.statusCode(Response(statusCode: 404, data: Data()))
                     return
                 }
-                
+
                 self.isRepositoryLoaded = true
                 self.branch = repo.defaultBranch
                 if let defaultBranch = repo.defaultBranch {
@@ -109,20 +110,20 @@ class RepositoryViewModel {
             })
             .addDisposableTo(disposeBag)
     }
-    
+
     // MARK: Branches
-    
+
     func fetchBranches() {
         let token = GitHubAPI.branches(repo: nameWithOwner, page: pageForBranches)
-        
+
         GitHubProvider
             .request(token)
             .subscribe(onSuccess: { [unowned self] in
-                
+
                 if let json = try? $0.mapJSON(), let newBranches = Mapper<Branch>().mapArray(JSONObject: json) {
                     self.branches.append(contentsOf: newBranches)
                 }
-                
+
                 if let headers = $0.response?.allHeaderFields {
                     if let _ = (headers["Link"] as? String)?.range(of: "rel=\"next\"") {
                         self.pageForBranches += 1
@@ -134,21 +135,21 @@ class RepositoryViewModel {
             })
             .addDisposableTo(disposeBag)
     }
-    
+
     func rearrangeBranches(withDefaultBranch defaultBranch: String) {
-        for (index, branch) in self.branches.enumerated() {
+        for (index, branch) in branches.enumerated() {
             if branch.name! == defaultBranch {
-                let _ = self.branches.remove(at: index)
+                _ = branches.remove(at: index)
                 branches.insert(branch, at: 0)
-                
+
                 break
             }
         }
     }
-    
+
     func toggleStarring() {
         let token: GitHubAPI = repository.value.hasStarred! ? .unstar(repo: nameWithOwner) : .star(repo: nameWithOwner)
-        
+
         GitHubProvider
             .request(token)
             .subscribe(onSuccess: { [unowned self] response in
@@ -161,77 +162,75 @@ class RepositoryViewModel {
             })
             .addDisposableTo(disposeBag)
     }
-    
+
     var numberOfSections: Int {
         setSections()
         return sections.count
     }
-    
+
     func setSections() {
         sections = []
-        
-        guard self.isRepositoryLoaded else {
+
+        guard isRepositoryLoaded else {
             sections.append(.loading)
             return
         }
-        
+
         sections.append(.info)
         if let _ = repository.value.defaultBranch {
             sections.append(.code)
         }
         sections.append(.misc)
     }
-    
+
     func setInfoTypes(repo: Repository) {
-        
         if !isRepositoryLoaded || infoTypes.count > 0 {
             return
         }
-        
+
         infoTypes.append(.author)
-        
+
         if let _ = repo.parent {
             infoTypes.append(.parent)
         }
-        
+
         if let _ = repo.mirrorURL {
             infoTypes.append(.mirror)
         }
-        
+
         if let desc = repo.repoDescription?.trimmingCharacters(in: .whitespacesAndNewlines),
             desc.count > 0 {
             infoTypes.append(.description)
         }
-        
+
         if let homepage = repo.homepage?.absoluteString.trimmingCharacters(in: .whitespacesAndNewlines),
             homepage.count > 0 {
             infoTypes.append(.homepage)
         }
-        
+
         if let _ = repo.defaultBranch {
             infoTypes.append(.readme)
         }
     }
-    
+
     func setMiscTypes(repo: Repository) {
-        
         if !isRepositoryLoaded || miscTypes.count > 0 {
             return
         }
-        
+
         if repo.hasIssuesEnabled! {
             miscTypes.append(.issues)
         }
-        
+
         miscTypes += [.pullRequests, .releases]
-        
+
         if let _ = repo.defaultBranch {
             miscTypes.append(.contributors)
         }
-        
+
         miscTypes.append(.activity)
     }
-    
+
     func numberOfRowsInSection(_ section: Int) -> Int {
         switch sections[section] {
         case .info:
@@ -246,17 +245,17 @@ class RepositoryViewModel {
             return 1
         }
     }
-    
+
     // MARK: generate child viewmodel
-    
+
     var readmeViewModel: FileViewModel {
         return FileViewModel(repository: nameWithOwner, ref: branch!)
     }
-    
+
     var fileTableViewModel: FileTableViewModel {
         return FileTableViewModel(repository: nameWithOwner, ref: branch!)
     }
-    
+
     var commitTableViewModel: CommitTableViewModel {
         return CommitTableViewModel(repo: nameWithOwner, branch: branch!)
     }

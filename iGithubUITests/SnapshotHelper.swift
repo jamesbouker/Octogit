@@ -37,7 +37,7 @@ enum SnapshotError: Error, CustomDebugStringConvertible {
     case cannotFindHomeDirectory
     case cannotFindSimulatorHomeDirectory
     case cannotAccessSimulatorHomeDirectory(String)
-    
+
     var debugDescription: String {
         switch self {
         case .cannotDetectUser:
@@ -46,7 +46,7 @@ enum SnapshotError: Error, CustomDebugStringConvertible {
             return "Couldn't find Snapshot configuration files - can't detect `Users` dir"
         case .cannotFindSimulatorHomeDirectory:
             return "Couldn't find simulator home location. Please, check SIMULATOR_HOST_HOME env variable."
-        case .cannotAccessSimulatorHomeDirectory(let simulatorHostHome):
+        case let .cannotAccessSimulatorHomeDirectory(simulatorHostHome):
             return "Can't prepare environment. Simulator home location is inaccessible. Does \(simulatorHostHome) exist?"
         }
     }
@@ -106,7 +106,7 @@ open class Snapshot: NSObject {
         do {
             let launchArguments = try String(contentsOf: path, encoding: String.Encoding.utf8)
             let regex = try NSRegularExpression(pattern: "(\\\".+?\\\"|\\S+)", options: [])
-            let matches = regex.matches(in: launchArguments, options: [], range: NSRange(location:0, length:launchArguments.characters.count))
+            let matches = regex.matches(in: launchArguments, options: [], range: NSRange(location: 0, length: launchArguments.characters.count))
             let results = matches.map { result -> String in
                 (launchArguments as NSString).substring(with: result.range)
             }
@@ -147,7 +147,7 @@ open class Snapshot: NSObject {
 
         let query = XCUIApplication().statusBars.children(matching: .other).element(boundBy: 1).children(matching: .other)
 
-        while (0..<query.count).map({ query.element(boundBy: $0) }).contains(where: { $0.isLoadingIndicator }) {
+        while (0 ..< query.count).map({ query.element(boundBy: $0) }).contains(where: { $0.isLoadingIndicator }) {
             sleep(1)
             print("Waiting for loading indicator to disappear...")
         }
@@ -162,7 +162,7 @@ open class Snapshot: NSObject {
                 throw SnapshotError.cannotDetectUser
             }
 
-            guard let usersDir =  FileManager.default.urls(for: .userDirectory, in: .localDomainMask).first else {
+            guard let usersDir = FileManager.default.urls(for: .userDirectory, in: .localDomainMask).first else {
                 throw SnapshotError.cannotFindHomeDirectory
             }
 
@@ -183,10 +183,10 @@ open class Snapshot: NSObject {
 extension XCUIElement {
     var isLoadingIndicator: Bool {
         let whiteListedLoaders = ["GeofenceLocationTrackingOn", "StandardLocationTrackingOn"]
-        if whiteListedLoaders.contains(self.identifier) {
+        if whiteListedLoaders.contains(identifier) {
             return false
         }
-        return self.frame.size == CGSize(width: 10, height: 20)
+        return frame.size == CGSize(width: 10, height: 20)
     }
 }
 

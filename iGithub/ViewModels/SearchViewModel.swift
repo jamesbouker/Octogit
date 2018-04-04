@@ -7,22 +7,21 @@
 //
 
 import Foundation
-import RxSwift
-import RxMoya
 import ObjectMapper
+import RxMoya
+import RxSwift
 
 class SearchViewModel {
-    
     enum SearchObject {
         case repository
         case user
     }
-    
+
     let repoTVM = RepositoriesSearchViewModel()
     let userTVM = UsersSearchViewModel()
-    
+
     var searchObject: SearchObject = .repository
-    
+
     func search(query: String) {
         switch searchObject {
         case .repository:
@@ -37,7 +36,7 @@ class SearchViewModel {
             userTVM.refresh()
         }
     }
-    
+
     @objc func fetchNextPage() {
         switch searchObject {
         case .repository:
@@ -46,11 +45,11 @@ class SearchViewModel {
             userTVM.fetchData()
         }
     }
-    
+
     func clean() {
         repoTVM.query = nil
         userTVM.query = nil
-        
+
         repoTVM.dataSource.value = []
         userTVM.dataSource.value = []
     }
@@ -59,20 +58,18 @@ class SearchViewModel {
 // MARK: SubViewModels
 
 class RepositoriesSearchViewModel: BaseTableViewModel<Repository> {
-    
     var query: String?
     var sort: RepositoriesSearchSort = .bestMatch
     var language = "All Languages"
     var isLoading = false
-    
+
     let sortOptions: [RepositoriesSearchSort] = [
-        .bestMatch, .stars, .forks, .updated
+        .bestMatch, .stars, .forks, .updated,
     ]
-    
+
     var token: GitHubAPI {
-        
         var q = query!
-        
+
         switch sort {
         case .stars:
             q += " sort:stars"
@@ -83,22 +80,22 @@ class RepositoriesSearchViewModel: BaseTableViewModel<Repository> {
         default:
             break
         }
-        
+
         let lan = languagesDict[language]!
         if lan.characters.count > 0 {
             q += " language:\(lan)"
         }
-        
+
         return GitHubAPI.searchRepositories(query: q, after: endCursor)
     }
-    
+
     override func fetchData() {
         GitHubProvider
             .request(token)
             .filterSuccessfulStatusCodes()
             .mapJSON()
             .subscribe(onSuccess: { [unowned self] in
-                
+
                 guard
                     let json = ($0 as? [String: [String: Any]])?["data"]?["search"],
                     let connection = Mapper<EntityConnection<Repository>>().map(JSONObject: json),
@@ -107,15 +104,15 @@ class RepositoriesSearchViewModel: BaseTableViewModel<Repository> {
                     // deal with error
                     return
                 }
-                
+
                 self.hasNextPage = connection.pageInfo!.hasNextPage!
-                
+
                 if self.endCursor == nil {
                     self.dataSource.value = newRepos
                 } else {
                     self.dataSource.value.append(contentsOf: newRepos)
                 }
-                
+
                 self.endCursor = connection.pageInfo?.endCursor
             })
             .addDisposableTo(disposeBag)
@@ -123,25 +120,24 @@ class RepositoriesSearchViewModel: BaseTableViewModel<Repository> {
 }
 
 class UsersSearchViewModel: BaseTableViewModel<User> {
-    
     var query: String?
     var sort: UsersSearchSort = .bestMatch
     var isLoading = false
-    
+
     let sortOptions: [UsersSearchSort] = [
-        .bestMatch, .followers, .repositories, .joined
+        .bestMatch, .followers, .repositories, .joined,
     ]
-    
+
     var token: GitHubAPI {
         return GitHubAPI.searchUsers(q: query!, sort: sort, page: page)
     }
-    
-    override func fetchData() {        
+
+    override func fetchData() {
         GitHubProvider
             .request(token)
             .do(onNext: { [unowned self] in
                 self.isLoading = false
-                
+
                 if let headers = $0.response?.allHeaderFields {
                     self.hasNextPage = (headers["Link"] as? String)?.range(of: "rel=\"next\"") != nil
                 }

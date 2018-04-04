@@ -10,21 +10,20 @@ import Foundation
 import ObjectMapper
 
 struct PageInfo: Mappable {
-    
-	var endCursor: String?
-	var startCursor: String?
-	var hasNextPage: Bool?
-	var hasPreviousPage: Bool?
+    var endCursor: String?
+    var startCursor: String?
+    var hasNextPage: Bool?
+    var hasPreviousPage: Bool?
 
-	init?(map: Map) {
-		mapping(map: map)
-	}
+    init?(map: Map) {
+        mapping(map: map)
+    }
 
-	mutating func mapping(map: Map) {
-		endCursor        <- map["endCursor"]
-		startCursor      <- map["startCursor"]
+    mutating func mapping(map: Map) {
+        endCursor <- map["endCursor"]
+        startCursor <- map["startCursor"]
 
-		hasNextPage      <- map["hasNextPage"]
-		hasPreviousPage  <- map["hasPreviousPage"]
-	}
+        hasNextPage <- map["hasNextPage"]
+        hasPreviousPage <- map["hasPreviousPage"]
+    }
 }

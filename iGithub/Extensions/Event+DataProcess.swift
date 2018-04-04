@@ -9,9 +9,8 @@
 import Foundation
 
 extension Event {
-    
     var title: String {
-        switch self.type! {
+        switch type! {
         case .commitCommentEvent:
             let e = self as! CommitCommentEvent
             let commitID = e.comment!.commitID!
@@ -45,7 +44,7 @@ extension Event {
             let e = self as! MemberEvent
             return "\(e.actor!) added \(e.member!) to \(e.repository!)"
         case .publicEvent:
-            return "\(self.actor!) made \(self.repository!) public"
+            return "\(actor!) made \(repository!) public"
         case .pullRequestEvent:
             let e = self as! PullRequestEvent
             var action: String
@@ -61,20 +60,20 @@ extension Event {
         case .pushEvent:
             let e = self as! PushEvent
             let ref = e.ref!.removePrefix("refs/heads/")
-            
+
             return "\(e.actor!) pushed to \(ref) at \(e.repository!)"
         case .releaseEvent:
             let e = self as! ReleaseEvent
             return "\(e.actor!) released \(e.releaseTagName!) at \(e.repository!)"
         case .watchEvent:
-            return "\(self.actor!) starred \(self.repository!)"
+            return "\(actor!) starred \(repository!)"
         default:
             return ""
         }
     }
-    
+
     var content: String? {
-        switch self.type! {
+        switch type! {
         case .commitCommentEvent:
             let e = self as! CommitCommentEvent
             return e.comment!.body!
@@ -121,12 +120,11 @@ extension Event {
             return nil
         }
     }
-    
+
     var icon: (text: String, color: UIColor) {
-        
         var icon: Octicon?
         var color = UIColor.darkGray
-        
+
         switch type! {
         case .commitCommentEvent, .pullRequestReviewCommentEvent, .issueCommentEvent:
             icon = Octicon.comment
@@ -162,7 +160,7 @@ extension Event {
             icon = Octicon.repo
         case .pullRequestEvent:
             let e = self as! PullRequestEvent
-            
+
             if e.action! == .closed && e.pullRequest!.isMerged! {
                 icon = Octicon.gitMerge
                 color = UIColor(netHex: 0x6E5494)
@@ -183,8 +181,7 @@ extension Event {
         default:
             break
         }
-        
+
         return (icon?.rawValue ?? "", color)
     }
-
 }

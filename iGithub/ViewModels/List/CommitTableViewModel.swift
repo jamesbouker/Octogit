@@ -10,38 +10,37 @@ import Foundation
 import ObjectMapper
 
 class CommitTableViewModel: BaseTableViewModel<Commit> {
-    
     var repo: String
     var token: GitHubAPI
-    
+
     init(repo: String, branch: String) {
         self.repo = repo
         token = .repositoryCommits(repo: repo, sha: branch, page: 1)
-        
+
         super.init()
     }
-    
+
     init(repo: String, pullRequestNumber: Int) {
         self.repo = repo
         token = .pullRequestCommits(repo: repo, number: pullRequestNumber, page: 1)
-        
+
         super.init()
     }
-    
+
     func updateToken() {
         switch token {
-        case .repositoryCommits(let repo, let branch, _):
+        case let .repositoryCommits(repo, branch, _):
             token = .repositoryCommits(repo: repo, sha: branch, page: page)
-        case .pullRequestCommits(let repo, let number, _):
+        case let .pullRequestCommits(repo, number, _):
             token = .pullRequestCommits(repo: repo, number: number, page: page)
         default:
             break
         }
     }
-    
+
     override func fetchData() {
         updateToken()
-        
+
         GitHubProvider
             .request(token)
             .do(onNext: { [unowned self] in
@@ -58,7 +57,7 @@ class CommitTableViewModel: BaseTableViewModel<Commit> {
                         } else {
                             self.dataSource.value.append(contentsOf: newCommits)
                         }
-                        
+
                         self.page += 1
                     }
                 },
@@ -68,7 +67,7 @@ class CommitTableViewModel: BaseTableViewModel<Commit> {
             )
             .addDisposableTo(disposeBag)
     }
-    
+
     func commitViewModel(forRow row: Int) -> CommitViewModel {
         let commit = dataSource.value[row]
         return CommitViewModel(repo: repo, commit: commit)

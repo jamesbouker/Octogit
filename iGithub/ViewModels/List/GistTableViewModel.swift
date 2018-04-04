@@ -10,35 +10,34 @@ import Foundation
 import ObjectMapper
 
 class GistTableViewModel: BaseTableViewModel<Gist> {
-    
     var token: GitHubAPI
-    
+
     override init() {
         token = .starredGists(page: 1)
-        
+
         super.init()
     }
-    
+
     init(user: String) {
         token = .userGists(user: user, page: 1)
-        
+
         super.init()
     }
-    
+
     func updateToken() {
         switch token {
         case .starredGists:
             token = .starredGists(page: page)
-        case .userGists(let user, _):
+        case let .userGists(user, _):
             token = .userGists(user: user, page: page)
         default:
             break
         }
     }
-    
+
     override func fetchData() {
         updateToken()
-        
+
         GitHubProvider
             .request(token)
             .do(onNext: { [unowned self] in
@@ -55,7 +54,7 @@ class GistTableViewModel: BaseTableViewModel<Gist> {
                         } else {
                             self.dataSource.value.append(contentsOf: newGists)
                         }
-                        
+
                         self.page += 1
                     }
                 },
@@ -65,5 +64,4 @@ class GistTableViewModel: BaseTableViewModel<Gist> {
             )
             .addDisposableTo(disposeBag)
     }
-    
 }

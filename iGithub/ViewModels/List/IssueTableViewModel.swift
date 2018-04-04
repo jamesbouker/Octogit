@@ -9,20 +9,19 @@
 import ObjectMapper
 
 class IssueTableViewModel: BaseTableViewModel<Issue> {
-    
     private var repo: String
     var state: IssueState
-    
+
     init(repo: String, state: IssueState = .open) {
         self.repo = repo
         self.state = state
-        
+
         super.init()
     }
-    
+
     override func fetchData() {
         let token = GitHubAPI.issues(repo: repo, page: page, state: state)
-        
+
         GitHubProvider
             .request(token)
             .filterSuccessfulStatusCodes()
@@ -35,17 +34,16 @@ class IssueTableViewModel: BaseTableViewModel<Issue> {
             .subscribe(
                 onSuccess: { [unowned self] in
                     if let newIssues = Mapper<Issue>().mapArray(JSONObject: $0) {
-                        
                         let filteredIssues = newIssues.filter {
                             !$0.isPullRequest
                         }
-                        
+
                         if self.page == 1 {
                             self.dataSource.value = filteredIssues
                         } else {
                             self.dataSource.value.append(contentsOf: filteredIssues)
                         }
-                        
+
                         self.page += 1
                     }
                 },
@@ -54,7 +52,7 @@ class IssueTableViewModel: BaseTableViewModel<Issue> {
             })
             .addDisposableTo(disposeBag)
     }
-    
+
     func viewModelForIndex(_ index: Int) -> IssueViewModel {
         return IssueViewModel(repo: repo, issue: dataSource.value[index])
     }

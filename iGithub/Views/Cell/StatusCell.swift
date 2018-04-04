@@ -9,13 +9,12 @@
 import UIKit
 
 class StatusCell: UITableViewCell {
-
     enum Status {
         case loading
         case error
         case empty
     }
-    
+
     var name: String
     var status: Status! {
         didSet {
@@ -32,39 +31,37 @@ class StatusCell: UITableViewCell {
             }
         }
     }
-    
+
     fileprivate let indicator = UIActivityIndicatorView(activityIndicatorStyle: .gray)
     fileprivate let promptLabel = UILabel()
-    
+
     init(name: String, status: Status = .loading) {
-        
         self.name = name
         defer {
             self.status = status
         }
-        
+
         super.init(style: .default, reuseIdentifier: "StatusCell")
-        
-        self.isUserInteractionEnabled = false
+
+        isUserInteractionEnabled = false
         indicator.hidesWhenStopped = true
-        
+
         contentView.addSubviews([indicator, promptLabel])
-        
+
         let margins = contentView.layoutMarginsGuide
-        
+
         NSLayoutConstraint.activate([
             indicator.leadingAnchor.constraint(equalTo: margins.leadingAnchor, constant: 3),
             indicator.centerYAnchor.constraint(equalTo: promptLabel.centerYAnchor),
-            
+
             promptLabel.leadingAnchor.constraint(equalTo: indicator.trailingAnchor, constant: 8),
             promptLabel.trailingAnchor.constraint(equalTo: margins.trailingAnchor, constant: -8),
             promptLabel.topAnchor.constraint(equalTo: margins.topAnchor, constant: 6),
-            promptLabel.bottomAnchor.constraint(equalTo: margins.bottomAnchor, constant: -6)
+            promptLabel.bottomAnchor.constraint(equalTo: margins.bottomAnchor, constant: -6),
         ])
     }
-    
-    required init?(coder aDecoder: NSCoder) {
+
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
 }

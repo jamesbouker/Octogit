@@ -6,33 +6,32 @@
 //  Copyright © 2016 Hocheung. All rights reserved.
 //
 
+import RxCocoa
+import RxSwift
 import UIKit
 import WebKit
-import RxSwift
-import RxCocoa
 
 class IssueViewController: UIViewController {
-    
     let indicator = LoadingIndicator()
     let webView = WKWebView()
-    
+
     let disposeBag = DisposeBag()
     var viewModel: IssueViewModel!
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         webView.frame = view.bounds
         webView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         webView.navigationDelegate = self
         webView.isOpaque = false
-        webView.backgroundColor = UIColor(netHex: 0xefeff4)
-        self.view.addSubview(webView)
-        
-        self.show(indicator: indicator, onView: webView)
-        
+        webView.backgroundColor = UIColor(netHex: 0xEFEFF4)
+        view.addSubview(webView)
+
+        show(indicator: indicator, onView: webView)
+
         navigationItem.title = "#\(viewModel.number)"
-        
+
         viewModel.html.asDriver()
             .flatMap { Driver.from(optional: $0) }
             .drive(onNext: { [unowned self] in
@@ -40,29 +39,26 @@ class IssueViewController: UIViewController {
                 self.indicator.removeFromSuperview()
             })
             .addDisposableTo(disposeBag)
-        
+
         viewModel.fetchData()
     }
-    
 }
 
 extension IssueViewController: WKNavigationDelegate {
-    
-    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-        
+    func webView(_: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         guard let url = navigationAction.request.url else {
             decisionHandler(.cancel)
             return
         }
-        
+
         if url.isFileURL {
             decisionHandler(.allow)
             return
         }
-        
+
         decisionHandler(.cancel)
-        
+
         let vc = URLRouter.viewController(forURL: url)
-        self.navigationController?.pushViewController(vc, animated: true)
+        navigationController?.pushViewController(vc, animated: true)
     }
 }

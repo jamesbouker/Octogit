@@ -8,80 +8,79 @@
 
 import Foundation
 import Mustache
-import RxSwift
 import ObjectMapper
+import RxSwift
 
 class IssueViewModel: BaseTableViewModel<Comment> {
-    
     var repo: String
     var issue: Issue!
     var number: Int
     var token: GitHubAPI?
-    
+
     let template: Template = {
         let template = try! Template(named: "issue")
         template.register(StandardLibrary.each, forKey: "each")
-        
+
         return template
     }()
+
     var html = Variable<String?>(nil)
-    
+
     init(owner: String, name: String, number: Int) {
-        self.repo = "\(owner)/\(name)"
+        repo = "\(owner)/\(name)"
         self.number = number
-        
+
         token = .issue(owner: owner, name: name, number: number)
-        
+
         super.init()
-        
+
         fetchContent()
     }
-    
+
     init(repo: String, issue: Issue) {
-        self.number = issue.number
+        number = issue.number
         self.repo = repo
         self.issue = issue
-        
+
         super.init()
-        
+
         html.value = try? template.render(Box(templateData))
     }
-    
+
     func fetchContent() {
-        
         guard let token = self.token else {
             return
         }
-        
+
         GitHubProvider
             .request(token)
             .filterSuccessfulStatusCodes()
             .mapJSON()
             .subscribe(
                 onSuccess: { [unowned self] in
-                    
+
                     guard let issue = Mapper<Issue>().map(JSONObject: $0) else {
                         return
                     }
-                    
+
                     self.issue = issue
                     self.fetchData()
                     self.html.value = try? self.template.render(Box(self.templateData))
                 },
                 onError: {
                     MessageManager.show(error: $0)
-            }
+                }
             )
             .addDisposableTo(disposeBag)
     }
-    
+
     override func fetchData() {
         guard let _ = issue else {
             return
         }
-        
+
         let token: GitHubAPI = .issueComments(repo: repo, number: issue.number!, page: page)
-        
+
         GitHubProvider
             .request(token)
             .filterSuccessfulStatusCodes()
@@ -94,7 +93,7 @@ class IssueViewModel: BaseTableViewModel<Comment> {
                     else {
                         return
                     }
-                    
+
                     self.dataSource.value.append(contentsOf: newComments)
                     self.html.value = try? self.template.render(Box(self.templateData))
                 },
@@ -104,10 +103,9 @@ class IssueViewModel: BaseTableViewModel<Comment> {
             )
             .addDisposableTo(disposeBag)
     }
-    
-    var templateData: [String : Any] {
-        
-        var data: [String : Any] = [
+
+    var templateData: [String: Any] {
+        var data: [String: Any] = [
             "title": issue.title!,
             "created_at": issue.createdAt!.naturalString(),
             "repository": self.repo,
@@ -122,29 +120,28 @@ class IssueViewModel: BaseTableViewModel<Comment> {
                 ]
             },
         ]
-        
+
         if let state = issue.state {
             data["state"] = try! Template(named: "issue-\(state.rawValue)-span")
         }
-        
+
         if let body = issue.bodyHTML, body.characters.count > 0 {
             data["content"] = body
         }
-        
+
         if let milestone = issue.milestone?.title {
             data["milestone"] = milestone
         }
-        
+
         if let labels = issue.labels {
-            
             data["labels"] = labels.map {
                 [
                     "name": $0.name!,
-                    "color": $0.color!
+                    "color": $0.color!,
                 ]
             }
         }
-        
+
         if let assignees = issue.assignees, assignees.count > 0 {
             data["asignees"] = assignees.map {
                 [
@@ -153,7 +150,7 @@ class IssueViewModel: BaseTableViewModel<Comment> {
                 ]
             }
         }
-        
+
         return data
     }
 }

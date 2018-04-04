@@ -8,7 +8,7 @@
 
 import Foundation
 
-extension File {    
+extension File {
     var shortSHA: String {
         return String(sha![...sha!.index(sha!.startIndex, offsetBy: 7)])
     }

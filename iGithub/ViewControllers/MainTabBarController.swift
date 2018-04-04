@@ -9,17 +9,15 @@
 import UIKit
 
 class MainTabBarController: UITabBarController, UITabBarControllerDelegate {
-
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         delegate = self
-        
-        let eventTVC = (viewControllers![0]  as! UINavigationController).topViewController as! EventTableViewController
+
+        let eventTVC = (viewControllers![0] as! UINavigationController).topViewController as! EventTableViewController
         eventTVC.viewModel = EventTableViewModel(user: AccountManager.currentUser!, type: .received)
     }
 
-    func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
-        
+    func tabBarController(_: UITabBarController, didSelect _: UIViewController) {
     }
 }

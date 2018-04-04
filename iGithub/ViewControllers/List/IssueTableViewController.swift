@@ -9,14 +9,13 @@
 import UIKit
 
 class IssueTableViewController: BaseTableViewController {
-
     var viewModel: IssueTableViewModel! {
         didSet {
             viewModel.dataSource.asDriver()
                 .skip(1)
                 .do(onNext: { [unowned self] _ in
                     self.tableView.refreshHeader?.endRefreshing()
-                    
+
                     self.viewModel.hasNextPage ?
                         self.tableView.refreshFooter?.endRefreshing() :
                         self.tableView.refreshFooter?.endRefreshingWithNoMoreData()
@@ -28,11 +27,11 @@ class IssueTableViewController: BaseTableViewController {
                         self.hide(statusType: .empty)
                     }
                 })
-                .drive(tableView.rx.items(cellIdentifier: "IssueCell", cellType: IssueCell.self)) { row, element, cell in
+                .drive(tableView.rx.items(cellIdentifier: "IssueCell", cellType: IssueCell.self)) { _, element, cell in
                     cell.entity = element
                 }
                 .addDisposableTo(viewModel.disposeBag)
-            
+
             viewModel.error.asDriver()
                 .filter {
                     $0 != nil
@@ -45,22 +44,21 @@ class IssueTableViewController: BaseTableViewController {
                 .addDisposableTo(viewModel.disposeBag)
         }
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         tableView.register(IssueCell.self, forCellReuseIdentifier: "IssueCell")
-        
+
         tableView.refreshHeader = RefreshHeader(target: viewModel, selector: #selector(viewModel.refresh))
         tableView.refreshFooter = RefreshFooter(target: viewModel, selector: #selector(viewModel.fetchData))
-        
+
         tableView.refreshHeader?.beginRefreshing()
     }
-    
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {        
+
+    override func tableView(_: UITableView, didSelectRowAt indexPath: IndexPath) {
         let issueVC = IssueViewController()
         issueVC.viewModel = viewModel.viewModelForIndex(indexPath.row)
-        self.navigationController?.pushViewController(issueVC, animated: true)
+        navigationController?.pushViewController(issueVC, animated: true)
     }
-
 }

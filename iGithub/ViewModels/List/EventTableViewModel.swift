@@ -7,9 +7,9 @@
 //
 
 import Foundation
+import Moya
 import ObjectMapper
 import RxSwift
-import Moya
 
 enum UserEventType {
     case performed
@@ -17,9 +17,8 @@ enum UserEventType {
 }
 
 class EventTableViewModel: BaseTableViewModel<Event> {
-    
     private var token: GitHubAPI
-    
+
     init(user: User, type: UserEventType) {
         switch type {
         case .performed:
@@ -27,36 +26,36 @@ class EventTableViewModel: BaseTableViewModel<Event> {
         case .received:
             token = .receivedEvents(user: user.login!, page: 1)
         }
-        
+
         super.init()
     }
-    
+
     init(repo: Repository) {
         token = .repositoryEvents(repo: repo.nameWithOwner!, page: 1)
-        
+
         super.init()
     }
-    
+
     init(org: User) {
         token = .organizationEvents(org: org.login!, page: 1)
-        
+
         super.init()
     }
-    
+
     override func fetchData() {
         switch token {
-        case .userEvents(let user, _):
+        case let .userEvents(user, _):
             token = .userEvents(user: user, page: page)
-        case .receivedEvents(let user, _):
+        case let .receivedEvents(user, _):
             token = .receivedEvents(user: user, page: page)
-        case .repositoryEvents(let repo, _):
+        case let .repositoryEvents(repo, _):
             token = .repositoryEvents(repo: repo, page: page)
-        case .organizationEvents(let org, _):
+        case let .organizationEvents(org, _):
             token = .organizationEvents(org: org, page: page)
         default:
             break
         }
-        
+
         GitHubProvider
             .request(token)
             .filterSuccessfulStatusAndRedirectCodes()
@@ -74,7 +73,7 @@ class EventTableViewModel: BaseTableViewModel<Event> {
                         } else {
                             self.dataSource.value.append(contentsOf: newEvents)
                         }
-                        
+
                         self.page += 1
                     }
                 },
@@ -84,7 +83,7 @@ class EventTableViewModel: BaseTableViewModel<Event> {
             )
             .addDisposableTo(disposeBag)
     }
-    
+
     var title: String {
         switch token {
         case .receivedEvents:
@@ -93,5 +92,4 @@ class EventTableViewModel: BaseTableViewModel<Event> {
             return "Recent activity"
         }
     }
-    
 }

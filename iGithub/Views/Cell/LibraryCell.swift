@@ -9,10 +9,9 @@
 import Foundation
 
 class LibraryCell: UITableViewCell {
-    
     @IBOutlet private var nameLabel: UILabel!
     @IBOutlet private var descriptionLabel: UILabel!
-    
+
     var entity: Repository! {
         didSet {
             nameLabel.text = entity.name

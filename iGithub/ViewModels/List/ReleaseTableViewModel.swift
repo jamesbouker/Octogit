@@ -10,18 +10,17 @@ import Foundation
 import ObjectMapper
 
 class ReleaseTableViewModel: BaseTableViewModel<Release> {
-    
     var repo: String
-    
+
     init(repo: Repository) {
         self.repo = repo.nameWithOwner!
-        
+
         super.init()
     }
-    
+
     override func fetchData() {
         let token = GitHubAPI.releases(repo: repo, page: page)
-        
+
         GitHubProvider
             .request(token)
             .do(onNext: { [unowned self] in
@@ -33,13 +32,13 @@ class ReleaseTableViewModel: BaseTableViewModel<Release> {
             .subscribe(
                 onSuccess: { [unowned self] in
                     let newReleases = Mapper<Release>().mapArray(JSONObject: $0)!
-                    
+
                     if self.page == 1 {
                         self.dataSource.value = newReleases
                     } else {
                         self.dataSource.value.append(contentsOf: newReleases)
                     }
-                    
+
                     self.page += 1
                 },
                 onError: { [unowned self] in
@@ -48,5 +47,4 @@ class ReleaseTableViewModel: BaseTableViewModel<Release> {
             )
             .addDisposableTo(disposeBag)
     }
-    
 }

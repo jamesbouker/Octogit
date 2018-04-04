@@ -9,7 +9,6 @@
 import Foundation
 
 extension Repository {
-    
     var icon: Octicon {
         if isPrivate! {
             return Octicon.lock

@@ -10,34 +10,33 @@ import UIKit
 import WebKit
 
 class FileViewController: UIViewController {
-
     let webView = WKWebView()
     let indicator = LoadingIndicator()
-    
+
     let titleLabel: UILabel = {
         $0.numberOfLines = 0
         $0.textAlignment = .center
         $0.font = UIFont.boldSystemFont(ofSize: 16)
         $0.textColor = UIColor.white
         return $0
-    } (UILabel())
-    
+    }(UILabel())
+
     var viewModel: FileViewModel!
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        webView.frame = self.view.bounds
+        webView.frame = view.bounds
         webView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         webView.navigationDelegate = self
-        
+
         view.addSubview(webView)
-        
-        self.show(indicator: indicator, onView: webView)
-        
+
+        show(indicator: indicator, onView: webView)
+
         navigationItem.titleView = titleLabel
         setTitle()
-		
+
         viewModel.html.asDriver()
             .filter { $0.characters.count > 0 }
             .drive(onNext: { [unowned self] html in
@@ -45,7 +44,7 @@ class FileViewController: UIViewController {
                 self.webView.loadHTMLString(html, baseURL: Bundle.main.resourceURL)
             })
             .addDisposableTo(viewModel.disposeBag)
-        
+
         viewModel.contentData.asDriver()
             .filter { $0.count > 0 }
             .drive(onNext: { [unowned self] data in
@@ -56,43 +55,40 @@ class FileViewController: UIViewController {
 
         viewModel.getFileContent()
     }
-    
-    private func setTitle()  {
-        
+
+    private func setTitle() {
         let attributedTitle = NSMutableAttributedString(string: viewModel.fileName)
-        
+
         if let path = viewModel.filePath, path.characters.count > 0 {
             attributedTitle.append(NSAttributedString(string: "\n\(path)",
-                attributes: [NSAttributedStringKey.font : UIFont.systemFont(ofSize: 11)]))
+                                                      attributes: [NSAttributedStringKey.font: UIFont.systemFont(ofSize: 11)]))
         }
-        
+
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.paragraphSpacing = 10
         attributedTitle.addAttributes(
-            [NSAttributedStringKey.paragraphStyle : paragraphStyle],
+            [NSAttributedStringKey.paragraphStyle: paragraphStyle],
             range: NSRangeFromString(attributedTitle.string))
-        
+
         titleLabel.attributedText = attributedTitle
     }
 }
 
 extension FileViewController: WKNavigationDelegate {
-    
-    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-        
+    func webView(_: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         guard let url = navigationAction.request.url else {
             decisionHandler(.cancel)
             return
         }
-        
+
         if url.isFileURL {
             decisionHandler(.allow)
             return
         }
-        
+
         decisionHandler(.cancel)
-        
+
         let vc = URLRouter.viewController(forURL: url)
-        self.navigationController?.pushViewController(vc, animated: true)
+        navigationController?.pushViewController(vc, animated: true)
     }
 }

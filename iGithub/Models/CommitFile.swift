@@ -10,14 +10,13 @@ import Foundation
 import ObjectMapper
 
 class CommitFile: Mappable {
-    
     enum Status: String {
-        case added = "added"
-        case removed = "removed"
-        case modified = "modified"
-        case renamed = "renamed"
+        case added
+        case removed
+        case modified
+        case renamed
     }
-    
+
     var path: String?
     var sha: String?
     var status: Status?
@@ -25,21 +24,21 @@ class CommitFile: Mappable {
     var deletions: Int?
     var changes: Int?
     var patch: String?
-    
+
     required init?(map: Map) {
         mapping(map: map)
     }
-    
+
     func mapping(map: Map) {
-        path        <- map["filename"]
-        sha         <- map["sha"]
-        status      <- map["status"]
-        additions   <- map["additions"]
-        deletions   <- map["deletions"]
-        changes     <- map["changes"]
-        patch       <- map["patch"]
+        path <- map["filename"]
+        sha <- map["sha"]
+        status <- map["status"]
+        additions <- map["additions"]
+        deletions <- map["deletions"]
+        changes <- map["changes"]
+        patch <- map["patch"]
     }
-    
+
     var name: String {
         return path!.components(separatedBy: "/").last!
     }

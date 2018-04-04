@@ -6,32 +6,31 @@
 //  Copyright © 2016 Hocheung. All rights reserved.
 //
 
-import UIKit
-import RxSwift
 import ObjectMapper
+import RxSwift
+import UIKit
 
 class BaseTableViewController: UITableViewController {
-    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         _ = tableView.rx.setDelegate(self)
         tableView.tableFooterView = UIView()
     }
-    
-    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+
+    override func tableView(_: UITableView, heightForRowAt _: IndexPath) -> CGFloat {
         return UITableViewAutomaticDimension
     }
-    
-    override func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
+
+    override func tableView(_: UITableView, estimatedHeightForRowAt _: IndexPath) -> CGFloat {
         return 90
     }
-    
+
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
     }
-    
-    override func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCellEditingStyle {
+
+    override func tableView(_: UITableView, editingStyleForRowAt _: IndexPath) -> UITableViewCellEditingStyle {
         return .none
     }
 }

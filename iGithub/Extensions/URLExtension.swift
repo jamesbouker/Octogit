@@ -7,15 +7,14 @@
 //
 
 extension URL {
-    
     var isGithubURL: Bool {
         return host == "github.com" || absoluteString.hasPrefix("/")
     }
-    
+
     var isGistURL: Bool {
         return host == "gist.github.com"
     }
-    
+
     var isLocalURL: Bool {
         return scheme == "file"
     }

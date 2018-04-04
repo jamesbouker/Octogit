@@ -9,20 +9,20 @@
 import Foundation
 
 class GraphQL {
-	static func query(_ token: GitHubAPI) -> [String: Any]? {
-		switch token {
-        case .repository(let repo):
+    static func query(_ token: GitHubAPI) -> [String: Any]? {
+        switch token {
+        case let .repository(repo):
             return [
                 "query": repositoryQuery,
-                "variables": ["owner": repo.owner, "name": repo.name]
+                "variables": ["owner": repo.owner, "name": repo.name],
             ]
 
-        case .repositories(let login, let type, let after):
+        case let .repositories(login, type, after):
 
-            var variables: [String : Any] = [
+            var variables: [String: Any] = [
                 "login": login,
                 "first": 30,
-                "orderBy": ["field": "PUSHED_AT", "direction": "DESC"]
+                "orderBy": ["field": "PUSHED_AT", "direction": "DESC"],
             ]
             if let after = after {
                 variables["after"] = after
@@ -30,15 +30,15 @@ class GraphQL {
 
             return [
                 "query": type == .user ? userRepositoriesQuery : organizationRepositoriesQuery,
-                "variables": variables
+                "variables": variables,
             ]
 
-        case .starredRepos(let user, let after):
+        case let .starredRepos(user, after):
 
-            var variables: [String : Any] = [
+            var variables: [String: Any] = [
                 "login": user,
                 "first": 30,
-                "orderBy": ["field": "STARRED_AT", "direction": "DESC"]
+                "orderBy": ["field": "STARRED_AT", "direction": "DESC"],
             ]
             if let after = after {
                 variables["after"] = after
@@ -46,14 +46,14 @@ class GraphQL {
 
             return [
                 "query": starredRepositoriesQuery,
-                "variables": variables
+                "variables": variables,
             ]
-        
-        case .subscribedRepos(let user, let after):
-            var variables: [String : Any] = [
+
+        case let .subscribedRepos(user, after):
+            var variables: [String: Any] = [
                 "login": user,
                 "first": 30,
-                "orderBy": ["field": "UPDATED_AT", "direction": "DESC"]
+                "orderBy": ["field": "UPDATED_AT", "direction": "DESC"],
             ]
             if let after = after {
                 variables["after"] = after
@@ -61,22 +61,22 @@ class GraphQL {
 
             return [
                 "query": watchingQuery,
-                "variables": variables
+                "variables": variables,
             ]
-            
-        case .searchRepositories(let query, let after):
-            var variables: [String : Any] = ["query": query]
+
+        case let .searchRepositories(query, after):
+            var variables: [String: Any] = ["query": query]
             if let after = after {
                 variables["after"] = after
             }
 
             return [
                 "query": searchRepositoriesQuery,
-                "variables": variables
+                "variables": variables,
             ]
 
         default:
             return nil
-		}
-	}
+        }
+    }
 }

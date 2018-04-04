@@ -6,34 +6,34 @@
 //  Copyright © 2016 Hocheung. All rights reserved.
 //
 
+import ObjectMapper
 import RxMoya
 import RxSwift
-import ObjectMapper
 
 class UserViewModel {
-    
     enum SectionType {
         case vcards
         case general
         case organizations
     }
-    
+
     enum VcardDetail {
         case company
         case location
         case email
         case blog
     }
-    
+
     var user: Variable<User>
     var isFollowing = Variable<Bool?>(nil)
     var organizations: Variable<[User]> = Variable([])
     let disposeBag = DisposeBag()
     var token: GitHubAPI
-    
+
     var userLoaded: Bool {
-        return self.user.value.followers != nil
+        return user.value.followers != nil
     }
+
     var sectionTypes = [SectionType]()
     var vcardDetails = [VcardDetail]()
     lazy var information: String = {
@@ -47,17 +47,18 @@ class UserViewModel {
         if let location = self.user.value.location, location.characters.count > 0 {
             information.append(", \(location)")
         }
-        
+
         return information
     }()
+
     lazy var htmlURL: URL = {
-        return URL(string: "https://github.com/\(self.user.value.login!)")!
+        URL(string: "https://github.com/\(self.user.value.login!)")!
     }()
-    
+
     init(_ user: User) {
         self.user = Variable(user)
         token = .user(user: user.login!)
-        
+
         if userLoaded {
             setSectionTypes(user: user)
         }
@@ -67,11 +68,11 @@ class UserViewModel {
         user = Variable(Mapper<User>().map(JSON: ["login": username])!)
         token = .user(user: username)
     }
-    
+
     var title: String {
         return user.value.login!
     }
-    
+
     func fetchUser() {
         GitHubProvider
             .request(token)
@@ -83,7 +84,7 @@ class UserViewModel {
             })
             .addDisposableTo(disposeBag)
     }
-    
+
     func fetchOrganizations() {
         GitHubProvider
             .request(.organizations(user: user.value.login!))
@@ -94,7 +95,7 @@ class UserViewModel {
             })
             .addDisposableTo(disposeBag)
     }
-    
+
     func checkIsFollowing() {
         GitHubProvider
             .request(.isFollowing(user: user.value.login!))
@@ -109,10 +110,10 @@ class UserViewModel {
             })
             .addDisposableTo(disposeBag)
     }
-    
+
     func toggleFollowing() {
         let token: GitHubAPI = isFollowing.value! ? .unfollow(user: user.value.login!) : .follow(user: user.value.login!)
-        
+
         GitHubProvider
             .request(token)
             .subscribe(onSuccess: { [unowned self] response in
@@ -125,30 +126,30 @@ class UserViewModel {
             })
             .addDisposableTo(disposeBag)
     }
-    
+
     var numberOfSections: Int {
         return userLoaded ? sectionTypes.count : 1
     }
-    
+
     private func setSectionTypes(user: User) {
         sectionTypes.removeAll()
-        
+
         setVcardDetails(user: user)
-        
+
         if vcardDetails.count > 0 {
             sectionTypes.append(.vcards)
         }
-        
+
         sectionTypes.append(.general)
-        
+
         if user.type! == .user {
             sectionTypes.append(.organizations)
         }
     }
-    
+
     private func setVcardDetails(user: User) {
         vcardDetails.removeAll()
-        
+
         if let company = user.company, company.trimmingCharacters(in: .whitespacesAndNewlines).characters.count > 0 {
             vcardDetails.append(.company)
         }
@@ -162,12 +163,12 @@ class UserViewModel {
             vcardDetails.append(.blog)
         }
     }
-    
+
     func numberOfRowsIn(section: Int) -> Int {
         guard userLoaded else {
             return 1
         }
-        
+
         switch sectionTypes[section] {
         case .vcards:
             return vcardDetails.count
