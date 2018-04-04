@@ -46,7 +46,7 @@ class MessageManager {
         messageView.configureTheme(type)
         messageView.configureContent(title: title, body: body)
         messageView.button?.isHidden = true
-        messageView.titleLabel?.isHidden = title.characters.count <= 0
+        messageView.titleLabel?.isHidden = title.count <= 0
 
         SwiftMessages.show(config: config, view: messageView)
     }

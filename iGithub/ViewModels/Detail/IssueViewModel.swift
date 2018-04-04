@@ -125,7 +125,7 @@ class IssueViewModel: BaseTableViewModel<Comment> {
             data["state"] = try! Template(named: "issue-\(state.rawValue)-span")
         }
 
-        if let body = issue.bodyHTML, body.characters.count > 0 {
+        if let body = issue.bodyHTML, body.count > 0 {
             data["content"] = body
         }
 

@@ -38,7 +38,7 @@ class FileViewController: UIViewController {
         setTitle()
 
         viewModel.html.asDriver()
-            .filter { $0.characters.count > 0 }
+            .filter { $0.count > 0 }
             .drive(onNext: { [unowned self] html in
                 self.indicator.removeFromSuperview()
                 self.webView.loadHTMLString(html, baseURL: Bundle.main.resourceURL)
@@ -59,7 +59,7 @@ class FileViewController: UIViewController {
     private func setTitle() {
         let attributedTitle = NSMutableAttributedString(string: viewModel.fileName)
 
-        if let path = viewModel.filePath, path.characters.count > 0 {
+        if let path = viewModel.filePath, path.count > 0 {
             attributedTitle.append(NSAttributedString(string: "\n\(path)",
                                                       attributes: [NSAttributedStringKey.font: UIFont.systemFont(ofSize: 11)]))
         }

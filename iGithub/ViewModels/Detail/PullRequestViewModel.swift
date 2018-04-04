@@ -137,7 +137,7 @@ class PullRequestViewModel: BaseTableViewModel<Comment> {
             data["state"] = try! Template(named: "pullRequest-\(status)-span")
         }
 
-        if let body = pullRequest.bodyHTML, body.characters.count > 0 {
+        if let body = pullRequest.bodyHTML, body.count > 0 {
             data["content"] = body
         }
 

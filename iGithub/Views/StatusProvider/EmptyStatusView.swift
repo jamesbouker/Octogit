@@ -42,13 +42,13 @@ open class EmptyStatusView: UIView {
     public convenience init(title: String?, caption: String? = nil, image: UIImage? = nil) {
         self.init(frame: CGRect.zero)
 
-        if let title = title, title.characters.count > 0 {
+        if let title = title, title.count > 0 {
             emptyTitleLabel.text = title
         } else {
             emptyTitleLabel.isHidden = true
         }
 
-        if let caption = caption, caption.characters.count > 0 {
+        if let caption = caption, caption.count > 0 {
             emptyDescriptionLabel.text = caption
         } else {
             emptyDescriptionLabel.isHidden = true

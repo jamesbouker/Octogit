@@ -187,7 +187,7 @@ enum Octicon: String, CustomStringConvertible {
         let attributedText = NSMutableAttributedString(string: " \(text)")
 
         if let attributes = attributes {
-            attributedText.addAttributes(attributes, range: NSMakeRange(1, text.characters.count))
+            attributedText.addAttributes(attributes, range: NSMakeRange(1, text.count))
         }
 
         iconString.append(attributedText)

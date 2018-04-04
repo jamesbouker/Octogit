@@ -118,6 +118,6 @@ extension String {
     }
 
     func substring(to _: Int) -> String {
-        return String(self[..< self.index(self.startIndex, offsetBy: 7)])
+        return String(self[..<self.index(self.startIndex, offsetBy: 7)])
     }
 }

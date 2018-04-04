@@ -126,7 +126,7 @@ class TrendingRepositoryTableViewModel: TrendingViewModelProtocol {
         message = doc.css("div.blankslate h3").first?.text?.trimmingCharacters(in: .whitespacesAndNewlines)
 
         repositories.value = doc.css("div.explore-content li").map {
-            let name = String($0.at_css("h3 a")!["href"]!.characters.dropFirst())
+            let name = String($0.at_css("h3 a")!["href"]!.dropFirst())
 
             let rawDesc = $0.at_css("div.py-1 p")
             let description = rawDesc?.text?.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -157,7 +157,7 @@ class TrendingUserTableViewModel: TrendingViewModelProtocol {
         message = doc.css("div.blankslate h3").first?.text?.trimmingCharacters(in: .whitespacesAndNewlines)
 
         users.value = doc.css("li.user-leaderboard-list-item.leaderboard-list-item").map {
-            let name = String($0.at_css("div h2 a")!["href"]!.characters.dropFirst())
+            let name = String($0.at_css("div h2 a")!["href"]!.dropFirst())
             let avatarURL = $0.at_css("a img")!["src"]!
 
             var type: String

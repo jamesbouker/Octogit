@@ -82,7 +82,7 @@ class RepositoriesSearchViewModel: BaseTableViewModel<Repository> {
         }
 
         let lan = languagesDict[language]!
-        if lan.characters.count > 0 {
+        if lan.count > 0 {
             q += " language:\(lan)"
         }
 

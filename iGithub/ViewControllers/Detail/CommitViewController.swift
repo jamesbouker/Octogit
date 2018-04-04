@@ -74,7 +74,7 @@ class CommitViewController: BaseTableViewController {
             NSAttributedStringKey.foregroundColor: UIColor(netHex: 0x555555),
             NSAttributedStringKey.font: UIFont.systemFont(ofSize: 15, weight: UIFont.Weight.medium),
         ],
-        range: NSRange(location: 0, length: author!.characters.count))
+        range: NSRange(location: 0, length: author!.count))
 
         infoLabel.attributedText = attrInfo
     }
